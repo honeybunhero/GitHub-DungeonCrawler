@@ -9,7 +9,7 @@ public class playerMovement : MonoBehaviour
     LayerMask floorMask, enemyMask, itemMask, environmentMask;
     Vector3 playerToMousePos, playerToMouseRot;
     Rigidbody rb;
-    // Use this for initialization
+
     void Start()
     {
         viewCam = Camera.main;
@@ -17,10 +17,11 @@ public class playerMovement : MonoBehaviour
         floorMask = 9 << LayerMask.GetMask("Walkable");
         itemMask = 10 << LayerMask.GetMask("Item");
         environmentMask = 11 << LayerMask.GetMask("Environment");
+
         rb = GetComponent<Rigidbody>();
         moveSpeed = moveSpeed * Time.deltaTime;
     }
-void RayCastController()
+    void RayCastController()
     {
         Ray rayCam = viewCam.ScreenPointToRay(Input.mousePosition);
         RaycastHit rayHit;
@@ -45,7 +46,7 @@ void RayCastController()
             {
                 if(rayHit.transform.gameObject.layer == enemyMask)
                 {
-                    Debug.Log("Fuck this nigga!");
+                    Debug.Log("Fuck this nigga!");      
                 }
             }
         }
