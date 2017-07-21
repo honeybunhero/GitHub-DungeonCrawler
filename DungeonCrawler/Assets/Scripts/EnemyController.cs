@@ -21,6 +21,6 @@ public class EnemyController : MonoBehaviour {
             itemDropped = Random.Range(0, itemList.itemArray.Length);
             Instantiate(itemList.itemArray[itemDropped], transform.position, Quaternion.identity);
         }
-        Debug.Log(health);
+
 	}
 }

@@ -1,11 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class playerMovement : MonoBehaviour
 {
     Camera viewCam;
     [SerializeField] float moveSpeed = 10;
+    public Image healthBar;
+    float currentHealth, maxHealth = 100f;
+
     LayerMask floorMask, enemyMask, itemMask, environmentMask;
     Vector3 playerToMousePos, playerToMouseRot;
     Rigidbody rb;
@@ -18,9 +22,29 @@ public class playerMovement : MonoBehaviour
         itemMask = 10 << LayerMask.GetMask("Item");
         environmentMask = 11 << LayerMask.GetMask("Environment");
 
+        currentHealth = maxHealth;
+        healthBar.fillAmount = currentHealth;
+
         rb = GetComponent<Rigidbody>();
         moveSpeed = moveSpeed * Time.deltaTime;
     }
+
+    void playerHealth() 
+    {
+        if (Input.GetMouseButtonDown(1)) // TODO CHANGE THIS TO WORK WITH ENEMY HITTING THE PLAYER
+        {
+            currentHealth -= 10;
+            float calc_health = currentHealth / maxHealth;
+            healthBar.fillAmount = calc_health;
+        }
+        if (Input.GetKeyDown(KeyCode.Space)) // TODO CHANGE THIS TO WORK WITH POTIONS/SPELLS
+        {
+            currentHealth += 10;
+            float calc_health = currentHealth / maxHealth;
+            healthBar.fillAmount = calc_health; 
+        }
+    }
+
     void RayCastController()
     {
         Ray rayCam = viewCam.ScreenPointToRay(Input.mousePosition);
@@ -46,7 +70,7 @@ public class playerMovement : MonoBehaviour
             {
                 if(rayHit.transform.gameObject.layer == enemyMask)
                 {
-                    Debug.Log("Fuck this nigga!");      
+                    
                 }
             }
         }
@@ -55,6 +79,8 @@ public class playerMovement : MonoBehaviour
     void FixedUpdate()
     {
         RayCastController();
+        playerHealth();
+        Debug.Log("my current health is: " + currentHealth);
     }
 }
 
