@@ -10,9 +10,13 @@ public class playerMovement : MonoBehaviour
     public Image healthBar;
     float currentHealth, maxHealth = 100f;
 
+    public Animator animController;
+
     LayerMask floorMask, enemyMask, itemMask, environmentMask;
     Vector3 playerToMousePos, playerToMouseRot;
     Rigidbody rb;
+
+    bool isWalking;
 
     void Start()
     {
@@ -21,6 +25,8 @@ public class playerMovement : MonoBehaviour
         floorMask = 9 << LayerMask.GetMask("Walkable");
         itemMask = 10 << LayerMask.GetMask("Item");
         environmentMask = 11 << LayerMask.GetMask("Environment");
+
+        animController = GetComponent<Animator>();
 
         currentHealth = maxHealth;
         healthBar.fillAmount = currentHealth;
@@ -59,18 +65,26 @@ public class playerMovement : MonoBehaviour
             Quaternion playerRot = Quaternion.LookRotation(playerToMouseRot);
             rb.MoveRotation(playerRot);
 
-            if(Input.GetMouseButton(0) || Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButton(0) || Input.GetMouseButtonDown(0))
             {
-                if(rayHit.transform.gameObject.layer == floorMask)
+                if (rayHit.transform.gameObject.layer == floorMask)
                 {
                     rb.transform.position = Vector3.MoveTowards(transform.position, playerToMousePos, moveSpeed);
+                    isWalking = true;
                 }
             }
+            else
+            {
+                isWalking = false;
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 if(rayHit.transform.gameObject.layer == enemyMask)
                 {
-                    
+                    rb.transform.position = Vector3.MoveTowards(transform.position, rayHit.transform.position, 1); //TODO THIS DOESN'T WORK PROPERLY. THE PLAYER
+                    // TELEPORTS RATHER THAN WALKS TOWARDS THAT POSITION;
+                    //TODO THIS IS WHERE THE ENEMY ATTACK ANIMATION GOES.
                 }
             }
         }
@@ -78,52 +92,18 @@ public class playerMovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (isWalking)
+        {
+            animController.speed = 3;
+            animController.Play("Walking");
+        }
+        else
+        {
+            animController.speed = 1;
+            animController.Play("Idle");
+        }
         RayCastController();
         playerHealth();
         Debug.Log("my current health is: " + currentHealth);
     }
 }
-
-
-
-
-/*
- * 
- * 
- * 
- * 
- * 
- * 
- *         Ray rayCam = viewCam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit rayHit;
-        Debug.DrawRay(rayCam.origin, rayCam.direction * distanceToBackground, Color.red);
-        if (Physics.Raycast(rayCam, out rayHit, Mathf.Infinity)) 
-        {
-            playerToMousePos = rayHit.point;
-            playerToMouseRot = rayHit.point - transform.position;
-            playerToMouseRot.y = 0;
-            playerToMousePos.y = 0;
-            Quaternion playerRotation = Quaternion.LookRotation(playerToMouseRot);
-            //playerRotation.x = 0;
-            rb.MoveRotation(playerRotation);
-            if (Input.GetMouseButtonDown(0) || Input.GetMouseButton(0))
-            {
-                if(rayHit.transform.gameObject.layer == floorMask)
-                {
-                    Debug.Log(rayHit.point);
-                    //playerToMousePos = rayHit.point;
-                    rb.transform.position = Vector3.MoveTowards(rb.transform.position, playerToMousePos, moveSpeed);
-                }
-            }
-            if(rayHit.transform.gameObject.layer == floorMask)
-            {
-                Debug.Log("This is floorMask");
-            }
-            else if(rayHit.transform.gameObject.layer == itemMask)
-            {
-                Debug.Log("This is itemMask!");
-            }
-            else if(rayHit.transform.gameObject.layer == environmentMask)
-            {
-                Debug.Log("This is the environmentMask!");
-            }*/
