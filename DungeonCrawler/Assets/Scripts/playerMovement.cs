@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using UnityEngine.AI;
 public class playerMovement : MonoBehaviour
 {
+    //TODO FIX ATTACK ANIMATION LOOP.
     Camera viewCam;
     [SerializeField] float moveSpeed = 10;
     public Image healthBar;
@@ -12,14 +13,21 @@ public class playerMovement : MonoBehaviour
 
     public Animator animController;
 
+    NavMeshAgent navMesh;
+
     LayerMask floorMask, enemyMask, itemMask, environmentMask;
     Vector3 playerToMousePos, playerToMouseRot;
     Rigidbody rb;
 
-    bool isWalking;
+    bool isWalking, isAttacking;
+
+    Vector3 enemyPos;
 
     void Start()
     {
+        navMesh = GetComponent<NavMeshAgent>();
+        navMesh.speed = 10;
+
         viewCam = Camera.main;
         enemyMask = 8 << LayerMask.GetMask("Enemy");
         floorMask = 9 << LayerMask.GetMask("Walkable");
@@ -69,7 +77,8 @@ public class playerMovement : MonoBehaviour
             {
                 if (rayHit.transform.gameObject.layer == floorMask)
                 {
-                    rb.transform.position = Vector3.MoveTowards(transform.position, playerToMousePos, moveSpeed);
+                    //rb.transform.position = Vector3.MoveTowards(transform.position, rayHit.point, moveSpeed); // OLD MOVEMENT. SMOOTHER THAN CURRENT
+                    navMesh.SetDestination(rayHit.point);
                     isWalking = true;
                 }
             }
@@ -80,16 +89,30 @@ public class playerMovement : MonoBehaviour
 
             if (Input.GetMouseButtonDown(0))
             {
-                if(rayHit.transform.gameObject.layer == enemyMask)
+                if (rayHit.transform.gameObject.layer == enemyMask)
                 {
-                    rb.transform.position = Vector3.MoveTowards(transform.position, rayHit.transform.position, 1); //TODO THIS DOESN'T WORK PROPERLY. THE PLAYER
-                    // TELEPORTS RATHER THAN WALKS TOWARDS THAT POSITION;
-                    //TODO THIS IS WHERE THE ENEMY ATTACK ANIMATION GOES.
+                    enemyPos = Vector3.MoveTowards(transform.position, rayHit.transform.position, 10);
+                    navMesh.SetDestination(enemyPos);
                 }
             }
         }
     }
     // Update is called once per frame
+
+    void attackEnemy()
+    {
+        if (Vector3.Distance(transform.position, enemyPos) <= 4 && !isWalking)
+        {
+            isAttacking = true;
+            Debug.Log("This is working");
+        }
+
+        if (isAttacking)
+        {
+            animController.Play("Attack");
+            isAttacking = false;
+        }
+    }
     void FixedUpdate()
     {
         if (isWalking)
@@ -102,8 +125,9 @@ public class playerMovement : MonoBehaviour
             animController.speed = 1;
             animController.Play("Idle");
         }
+
         RayCastController();
         playerHealth();
-        Debug.Log("my current health is: " + currentHealth);
+        attackEnemy();
     }
 }
